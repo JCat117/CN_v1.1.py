@@ -244,13 +244,22 @@ with st.form("form_registro", clear_on_submit=True):
         fecha = st.date_input("Fecha", value=date.today())
         tanque_select = st.selectbox("Tanque", options=TANQUE_OPTIONS)
         tanque_manual = st.text_input("O escribe otro tanque (opcional)", placeholder="Ej: D1")
-        volumen = st.selectbox("Volumen (t)", options=VOLUMEN_OPTIONS)
-        ley_cabeza = st.number_input("Ley Cabeza (g/t)", min_value=0.0, step=0.01, format="%.2f")
+        volumen = st.selectbox("Volumen (t)", options=VOLUMEN_OPTIONS, index=VOLUMEN_OPTIONS.index(20))
+        ley_cabeza = st.number_input(
+            "Ley Cabeza (g/t)", min_value=0.0, step=0.01, format="%.2f",
+            value=None, placeholder="0.00",
+        )
 
     with col2:
-        ley_cola = st.number_input("Ley Cola (g/t)", min_value=0.0, step=0.01, format="%.2f")
-        cianuro = st.selectbox("Cianuro (kg)", options=CIANURO_OPTIONS)
-        cal = st.selectbox("Cal (fundas)", options=CAL_OPTIONS, format_func=lambda x: f"{x:.2f}")
+        ley_cola = st.number_input(
+            "Ley Cola (g/t)", min_value=0.0, step=0.01, format="%.2f",
+            value=None, placeholder="0.00",
+        )
+        cianuro = st.selectbox("Cianuro (kg)", options=CIANURO_OPTIONS, index=CIANURO_OPTIONS.index(50))
+        cal = st.selectbox(
+            "Cal (fundas)", options=CAL_OPTIONS, index=CAL_OPTIONS.index(0.50),
+            format_func=lambda x: f"{x:.2f}",
+        )
 
     submitted = st.form_submit_button("💾 Guardar Registro", use_container_width=True)
 
@@ -259,13 +268,15 @@ with st.form("form_registro", clear_on_submit=True):
         if not tanque:
             st.error("El campo 'Tanque' es obligatorio.")
         else:
-            oro_recuperado = volumen * (ley_cabeza - ley_cola)
+            ley_cabeza_val = ley_cabeza or 0.0
+            ley_cola_val = ley_cola or 0.0
+            oro_recuperado = volumen * (ley_cabeza_val - ley_cola_val)
             nuevo = pd.DataFrame([{
                 "Fecha": pd.to_datetime(fecha),
                 "Tanque": tanque,
                 "Volumen": volumen,
-                "Ley Cabeza": ley_cabeza,
-                "Ley Cola": ley_cola,
+                "Ley Cabeza": ley_cabeza_val,
+                "Ley Cola": ley_cola_val,
                 "Cianuro": cianuro,
                 "Cal (fundas)": cal,
                 "Oro Recuperado (g)": round(oro_recuperado, 2),
